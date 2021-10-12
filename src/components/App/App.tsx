@@ -2,7 +2,7 @@ import styled from 'styled-components'
 import { ThemeProvider } from '../providers'
 import { useEffect, useState, useRef } from 'react'
 import CSVReader from 'react-csv-reader'
-import Input from '../Input'
+import I from '../Input'
 
 const FIRST_OR_DEFAULT = 0
 const TABLE_HEIGHT = 600
@@ -16,10 +16,15 @@ const App = () => {
   const [isEditName, setIsEditName] = useState(
     data[FIRST_OR_DEFAULT]?.map((name) => false)
   )
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const [name, setName] = useState(data[FIRST_OR_DEFAULT])
 
   useEffect(() => {
-    setIsEditName(data[FIRST_OR_DEFAULT]?.map((name) => false))
+    if (!isEditName) {
+      setIsEditName(data[FIRST_OR_DEFAULT]?.map((name) => false))
+    }
+    if (!name) {
+      setName(data[FIRST_OR_DEFAULT])
+    }
   }, [data])
 
   const onFileLoaded = (data: any[][]) => {
@@ -53,6 +58,37 @@ const App = () => {
     )
   }
 
+  useEffect(() => {
+    if (!isEditView) {
+      setIsEditName((current) =>
+        current?.map((value) => {
+          if (value) return !value
+          return value
+        })
+      )
+    }
+  }, [isEditView])
+
+  const changeName = (index: number) => (e: any) => {
+    setName((current) =>
+      current.map((name, index_) => {
+        if (index === index_) return e.target.value
+        return name
+      })
+    )
+  }
+
+  useEffect(() => {
+    if (isEditName && !isEditName.some((value) => value)) {
+      setData((current) =>
+        current.map((row, index) => {
+          if (index === 0) return name
+          return row
+        })
+      )
+    }
+  }, [isEditName])
+
   const getContent = () => {
     if (isEditView) {
       return (
@@ -61,29 +97,30 @@ const App = () => {
             done
           </Button>
           <EditTable>
-            {data[0].map((name, index, array) => {
+            {data[0]?.map((name_, index, array) => {
               if (index === 0)
                 return (
                   <Span
-                    key={name}
+                    key={name_}
                     isTopLeft
                     isPointer
                     onClick={editName(index)}
                   >
                     {isEditName[index] ? (
                       <Input
-                        value={name}
+                        value={name[index]}
                         onOutsideClick={toggleEditName(index)}
+                        onChange={changeName(index)}
                       />
                     ) : (
-                      <span>{name}</span>
+                      <span>{name[index]}</span>
                     )}
                   </Span>
                 )
               if (index === array.length - 1)
                 return (
                   <Span
-                    key={name}
+                    key={name_}
                     isBottomLeft
                     isBottomRight
                     isPointer
@@ -91,23 +128,25 @@ const App = () => {
                   >
                     {isEditName[index] ? (
                       <Input
-                        value={name}
+                        value={name[index]}
                         onOutsideClick={toggleEditName(index)}
+                        onChange={changeName(index)}
                       />
                     ) : (
-                      <span>{name}</span>
+                      <span>{name[index]}</span>
                     )}
                   </Span>
                 )
               return (
-                <Span key={name} isPointer onClick={editName(index)}>
+                <Span key={name_} isPointer onClick={editName(index)}>
                   {isEditName[index] ? (
                     <Input
-                      value={name}
+                      value={name[index]}
                       onOutsideClick={toggleEditName(index)}
+                      onChange={changeName(index)}
                     />
                   ) : (
-                    <span>{name}</span>
+                    <span>{name[index]}</span>
                   )}
                 </Span>
               )
@@ -215,4 +254,9 @@ border-right:1px solid ${theme.colors.darkblue};
 
 const Button = styled.button`
   margin-bottom: 10px;
+`
+const Input = styled(I)`
+  /*height:30px;*/
+  border-radius: 5px;
+  padding: 10px 10px;
 `
