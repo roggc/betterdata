@@ -1,11 +1,13 @@
 import styled from 'styled-components'
 import { ThemeProvider } from '../providers'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import CSVReader from 'react-csv-reader'
 import I from '../Input'
+import Dd, { IDropdownItem } from '../Dropdown'
 
 const FIRST_OR_DEFAULT = 0
 const TABLE_HEIGHT = 600
+const editTableColumnNames = ['Name', 'Include']
 
 const App = () => {
   const [numberOfColumns, setNumberOfColumns] = useState<number | undefined>(
@@ -25,7 +27,7 @@ const App = () => {
     if (!name) {
       setName(data[FIRST_OR_DEFAULT])
     }
-  }, [data])
+  }, [data, isEditName, name])
 
   const onFileLoaded = (data: any[][]) => {
     setNumberOfColumns(data[FIRST_OR_DEFAULT].length)
@@ -87,7 +89,7 @@ const App = () => {
         })
       )
     }
-  }, [isEditName])
+  }, [isEditName, name])
 
   const getContent = () => {
     if (isEditView) {
@@ -97,35 +99,67 @@ const App = () => {
             done
           </Button>
           <EditTable>
-            {data[0]?.map((name_, index, array) => {
+            {editTableColumnNames.map((columnName, index) => {
               if (index === 0)
                 return (
-                  <Span
-                    key={name_}
-                    isTopLeft
-                    isPointer
-                    onClick={editName(index)}
-                  >
-                    {isEditName[index] ? (
-                      <Input
-                        value={name[index]}
-                        onOutsideClick={toggleEditName(index)}
-                        onChange={changeName(index)}
-                      />
-                    ) : (
-                      <span>{name[index]}</span>
-                    )}
+                  <Span key={columnName} isTopLeft isCenter>
+                    {columnName}
                   </Span>
+                )
+              return <Span key={columnName} isCenter>{columnName}</Span>
+            })}
+            {data[0]?.map((name_, index, array) => {
+              const includeDropdownItems: IDropdownItem[] = [
+                { value: 'yes', label: 'yes' },
+                { value: 'no', label: 'no' },
+              ]
+              if (index === 0)
+                return (
+                  <Fragment key={name_}>
+                    <Span isPointer onClick={editName(index)}>
+                      {isEditName[index] ? (
+                        <Input
+                          value={name[index]}
+                          onOutsideClick={toggleEditName(index)}
+                          onChange={changeName(index)}
+                        />
+                      ) : (
+                        <span>{name[index]}</span>
+                      )}
+                    </Span>
+                    <Span isCenter>
+                      <Dropdown
+                        items={includeDropdownItems}
+                        initialSelectedIndex={0}
+                      />
+                    </Span>
+                  </Fragment>
                 )
               if (index === array.length - 1)
                 return (
-                  <Span
-                    key={name_}
-                    isBottomLeft
-                    isBottomRight
-                    isPointer
-                    onClick={editName(index)}
-                  >
+                  <Fragment key={name_}>
+                    <Span isBottomLeft isPointer onClick={editName(index)}>
+                      {isEditName[index] ? (
+                        <Input
+                          value={name[index]}
+                          onOutsideClick={toggleEditName(index)}
+                          onChange={changeName(index)}
+                        />
+                      ) : (
+                        <span>{name[index]}</span>
+                      )}
+                    </Span>
+                    <Span isCenter>
+                      <Dropdown
+                        items={includeDropdownItems}
+                        initialSelectedIndex={0}
+                      />
+                    </Span>
+                  </Fragment>
+                )
+              return (
+                <Fragment key={name_}>
+                  <Span isPointer onClick={editName(index)}>
                     {isEditName[index] ? (
                       <Input
                         value={name[index]}
@@ -136,19 +170,13 @@ const App = () => {
                       <span>{name[index]}</span>
                     )}
                   </Span>
-                )
-              return (
-                <Span key={name_} isPointer onClick={editName(index)}>
-                  {isEditName[index] ? (
-                    <Input
-                      value={name[index]}
-                      onOutsideClick={toggleEditName(index)}
-                      onChange={changeName(index)}
+                  <Span isCenter>
+                    <Dropdown
+                      items={includeDropdownItems}
+                      initialSelectedIndex={0}
                     />
-                  ) : (
-                    <span>{name[index]}</span>
-                  )}
-                </Span>
+                  </Span>
+                </Fragment>
               )
             })}
           </EditTable>
@@ -217,17 +245,26 @@ interface ISpan {
   isBottomLeft?: boolean
   isBottomRight?: boolean
   isPointer?: boolean
+  isCenter?: boolean
 }
 
 const Span = styled.div<ISpan>`
   padding: 8px 4px;
-  ${({ theme, isBottomLeft, isBottomRight, isTopLeft, isPointer }): string => `
+  ${({
+    theme,
+    isBottomLeft,
+    isBottomRight,
+    isTopLeft,
+    isPointer,
+    isCenter,
+  }): string => `
 border-left:1px solid ${theme.colors.darkblue};
 border-bottom:1px solid ${theme.colors.darkblue};
 ${isBottomLeft ? 'border-bottom-left-radius:5px;' : ''}
 ${isBottomRight ? 'border-bottom-right-radius:5px;' : ''}
 ${isTopLeft ? 'border-top-left-radius:5px;' : ''}
 ${isPointer ? 'cursor:pointer;&:hover{text-decoration:underline;}' : ''}
+${isCenter ? 'display:flex;justify-content:center;align-items:center;' : ''}
 `}
 `
 
@@ -245,7 +282,7 @@ const EditTable = styled.div`
   display: grid;
   border-radius: 5px;
   width: fit-content;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   ${({ theme }) => `
 border-top:1px solid ${theme.colors.darkblue};
 border-right:1px solid ${theme.colors.darkblue};
@@ -255,8 +292,16 @@ border-right:1px solid ${theme.colors.darkblue};
 const Button = styled.button`
   margin-bottom: 10px;
 `
+
 const Input = styled(I)`
   /*height:30px;*/
   border-radius: 5px;
   padding: 10px 10px;
+`
+
+const Dropdown = styled(Dd)`
+  margin: 5px;
+  border: 2px solid blue;
+  background-color: red;
+  padding: 5px;
 `
