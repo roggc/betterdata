@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export interface IDropdownItem {
   label: string
@@ -8,17 +8,27 @@ export interface IDropdownItem {
 interface IDropdownProps {
   items: IDropdownItem[]
   initialSelectedIndex?: number
+  valuesRef: React.MutableRefObject<string[]>
+  index: number
+  setFoo:React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const Dropdown: React.FC<IDropdownProps> = ({
   items,
   initialSelectedIndex,
+  valuesRef,
+  index,
+  setFoo
 }) => {
-  const [value, setValue] = useState(
-    initialSelectedIndex !== undefined
-      ? items[initialSelectedIndex].value
-      : undefined
-  )
+  const [value, setValue] = useState(valuesRef.current[index])
+
+  useEffect(() => {
+    if (value) {
+      valuesRef.current[index] = value
+      setFoo(foo=>!foo)
+    }
+  }, [value,index])
+
   return (
     <select
       value={value}

@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import { ThemeProvider } from '../providers'
-import { useEffect, useState, Fragment } from 'react'
+import { useEffect, useState, Fragment, useRef } from 'react'
 import CSVReader from 'react-csv-reader'
 import I from '../Input'
 import Dd, { IDropdownItem } from '../Dropdown'
@@ -8,31 +8,50 @@ import Dd, { IDropdownItem } from '../Dropdown'
 const FIRST_OR_DEFAULT = 0
 const TABLE_HEIGHT = 600
 const editTableColumnNames = ['Name', 'Include']
+const FIRST_NUMBER_OF_ROWS = 31
 
 const App = () => {
-  const [numberOfColumns, setNumberOfColumns] = useState<number | undefined>(
-    undefined
-  )
   const [data, setData] = useState<any[][]>([])
   const [isEditView, setIsEditView] = useState(false)
   const [isEditName, setIsEditName] = useState(
-    data[FIRST_OR_DEFAULT]?.map((name) => false)
+    data[FIRST_OR_DEFAULT]?.map((_) => false)
   )
   const [name, setName] = useState(data[FIRST_OR_DEFAULT])
-
-  useEffect(() => {
-    if (!isEditName) {
-      setIsEditName(data[FIRST_OR_DEFAULT]?.map((name) => false))
-    }
-    if (!name) {
-      setName(data[FIRST_OR_DEFAULT])
-    }
-  }, [data, isEditName, name])
+  const [columnIsShown, setColumnIsShown] = useState(
+    data[FIRST_OR_DEFAULT]?.map((_) => true)
+  )
+  const dropdownValuesRef = useRef<string[]>([])
+  const [foo, setFoo] = useState(false)
 
   const onFileLoaded = (data: any[][]) => {
-    setNumberOfColumns(data[FIRST_OR_DEFAULT].length)
-    setData(data.slice(0, 30))
+    dropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map((_) => '')
+    setColumnIsShown(data[FIRST_OR_DEFAULT]?.map((_) => true))
+    setIsEditName(data[FIRST_OR_DEFAULT]?.map((_) => false))
+    setName(data[FIRST_OR_DEFAULT])
+    setData(data.slice(0, FIRST_NUMBER_OF_ROWS))
   }
+
+  useEffect(() => {
+    dropdownValuesRef.current.some((value, index) => {
+      if (value === 'yes' && !columnIsShown[index]) {
+        setColumnIsShown((columnIsShown) => {
+          const newColumnIsShown = [...columnIsShown]
+          newColumnIsShown[index] = true
+          return newColumnIsShown
+        })
+        return true
+      }
+      if (value === 'no' && columnIsShown[index]) {
+        setColumnIsShown((columnIsShown) =>
+          columnIsShown.map((isShown, index_) => {
+            if (index === index_) return !isShown
+            return isShown
+          })
+        )
+        return true
+      }
+    })
+  }, [foo,columnIsShown])
 
   const showEditView = () => {
     setIsEditView(true)
@@ -106,7 +125,11 @@ const App = () => {
                     {columnName}
                   </Span>
                 )
-              return <Span key={columnName} isCenter>{columnName}</Span>
+              return (
+                <Span key={columnName} isCenter>
+                  {columnName}
+                </Span>
+              )
             })}
             {data[0]?.map((name_, index, array) => {
               const includeDropdownItems: IDropdownItem[] = [
@@ -131,6 +154,9 @@ const App = () => {
                       <Dropdown
                         items={includeDropdownItems}
                         initialSelectedIndex={0}
+                        valuesRef={dropdownValuesRef}
+                        index={index}
+                        setFoo={setFoo}
                       />
                     </Span>
                   </Fragment>
@@ -153,6 +179,9 @@ const App = () => {
                       <Dropdown
                         items={includeDropdownItems}
                         initialSelectedIndex={0}
+                        valuesRef={dropdownValuesRef}
+                        index={index}
+                        setFoo={setFoo}
                       />
                     </Span>
                   </Fragment>
@@ -174,6 +203,9 @@ const App = () => {
                     <Dropdown
                       items={includeDropdownItems}
                       initialSelectedIndex={0}
+                      valuesRef={dropdownValuesRef}
+                      index={index}
+                      setFoo={setFoo}
                     />
                   </Span>
                 </Fragment>
@@ -192,9 +224,18 @@ const App = () => {
           </button>
         </FirstInARow>
         <TableContainer>
-          <Table numberOfColumns={numberOfColumns}>
+          <Table
+            numberOfColumns={columnIsShown?.reduce((acc, value) => {
+              if (value) return ++acc
+              return acc
+            }, 0)}
+          >
             {data.map((row, i) =>
-              row.map((cell, j) => <Span key={`${i}_${j}`}>{cell}</Span>)
+              row.map((cell, j) => {
+                if (columnIsShown[j])
+                  return <Span key={`${i}_${j}`}>{cell}</Span>
+                return null
+              })
             )}
           </Table>
         </TableContainer>
