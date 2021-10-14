@@ -7,8 +7,16 @@ import Dd, { IDropdownItem } from '../Dropdown'
 
 const FIRST_OR_DEFAULT = 0
 const TABLE_HEIGHT = 600
-const editTableColumnNames = ['Name', 'Include']
+const editTableColumnNames = ['Name', 'Include', 'Encoding type']
 const FIRST_NUMBER_OF_ROWS = 31
+const includeDropdownItems: IDropdownItem[] = [
+  { value: 'yes', label: 'yes' },
+  { value: 'no', label: 'no' },
+]
+const encodingTypeDropdownItems: IDropdownItem[] = [
+  { value: 'categorical', label: 'Categorical' },
+  { value: 'digit', label: 'digit' },
+]
 
 const App = () => {
   const [data, setData] = useState<any[][]>([])
@@ -22,9 +30,14 @@ const App = () => {
   )
   const dropdownValuesRef = useRef<string[]>([])
   const [foo, setFoo] = useState(false)
+  const encodingTypeDropdownValuesRef = useRef<string[]>([])
+  const [bar, setBar] = useState(false)
 
   const onFileLoaded = (data: any[][]) => {
     dropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map((_) => '')
+    encodingTypeDropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map(
+      (_) => ''
+    )
     setColumnIsShown(data[FIRST_OR_DEFAULT]?.map((_) => true))
     setIsEditName(data[FIRST_OR_DEFAULT]?.map((_) => false))
     setName(data[FIRST_OR_DEFAULT])
@@ -51,7 +64,7 @@ const App = () => {
         return true
       }
     })
-  }, [foo,columnIsShown])
+  }, [foo, columnIsShown])
 
   const showEditView = () => {
     setIsEditView(true)
@@ -132,10 +145,6 @@ const App = () => {
               )
             })}
             {data[0]?.map((name_, index, array) => {
-              const includeDropdownItems: IDropdownItem[] = [
-                { value: 'yes', label: 'yes' },
-                { value: 'no', label: 'no' },
-              ]
               if (index === 0)
                 return (
                   <Fragment key={name_}>
@@ -157,6 +166,15 @@ const App = () => {
                         valuesRef={dropdownValuesRef}
                         index={index}
                         setFoo={setFoo}
+                      />
+                    </Span>
+                    <Span isCenter>
+                      <Dropdown
+                        items={encodingTypeDropdownItems}
+                        initialSelectedIndex={0}
+                        valuesRef={encodingTypeDropdownValuesRef}
+                        index={index}
+                        setFoo={setBar}
                       />
                     </Span>
                   </Fragment>
@@ -184,6 +202,15 @@ const App = () => {
                         setFoo={setFoo}
                       />
                     </Span>
+                    <Span isCenter>
+                      <Dropdown
+                        items={encodingTypeDropdownItems}
+                        initialSelectedIndex={0}
+                        valuesRef={encodingTypeDropdownValuesRef}
+                        index={index}
+                        setFoo={setBar}
+                      />
+                    </Span>
                   </Fragment>
                 )
               return (
@@ -206,6 +233,15 @@ const App = () => {
                       valuesRef={dropdownValuesRef}
                       index={index}
                       setFoo={setFoo}
+                    />
+                  </Span>
+                  <Span isCenter>
+                    <Dropdown
+                      items={encodingTypeDropdownItems}
+                      initialSelectedIndex={0}
+                      valuesRef={encodingTypeDropdownValuesRef}
+                      index={index}
+                      setFoo={setBar}
                     />
                   </Span>
                 </Fragment>
@@ -323,7 +359,7 @@ const EditTable = styled.div`
   display: grid;
   border-radius: 5px;
   width: fit-content;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   ${({ theme }) => `
 border-top:1px solid ${theme.colors.darkblue};
 border-right:1px solid ${theme.colors.darkblue};
