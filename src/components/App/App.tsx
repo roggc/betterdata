@@ -7,7 +7,7 @@ import Dd, { IDropdownItem } from '../Dropdown'
 
 const FIRST_OR_DEFAULT = 0
 const TABLE_HEIGHT = 600
-const editTableColumnNames = ['Name', 'Include', 'Encoding type']
+const editTableColumnNames = ['Name', 'Include', 'Encoding type','Encoding options']
 const FIRST_NUMBER_OF_ROWS = 31
 const includeDropdownItems: IDropdownItem[] = [
   { value: 'yes', label: 'yes' },
@@ -32,7 +32,6 @@ const App = () => {
   const [includeChange, setIncludeChange] = useState(false)
   const encodingTypeDropdownValuesRef = useRef<string[]>([])
   const [encodingTypeChange, setEncodingTypeChange] = useState(false)
-  // const [isCategorical,setIsCategorical]=useState(false)
 
 // useEffect(()=>{
 //   encodingTypeDropdownValuesRef.current
@@ -41,7 +40,7 @@ const App = () => {
   const onFileLoaded = (data: any[][]) => {
     includeDropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map((_) => '')
     encodingTypeDropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map(
-      (_) => ''
+      (_) => 'categorical'
     )
     setColumnIsShown(data[FIRST_OR_DEFAULT]?.map((_) => true))
     setIsEditName(data[FIRST_OR_DEFAULT]?.map((_) => false))
@@ -182,6 +181,9 @@ const App = () => {
                         setFoo={setEncodingTypeChange}
                       />
                     </Span>
+                    <Span>
+                      {encodingTypeDropdownValuesRef.current[index]==='categorical'?'Threshold':'Precision'}
+                    </Span>
                   </Fragment>
                 )
               if (index === array.length - 1)
@@ -216,6 +218,9 @@ const App = () => {
                         setFoo={setEncodingTypeChange}
                       />
                     </Span>
+                    <Span isBottomRight>
+                      {encodingTypeDropdownValuesRef.current[index]==='categorical'?'Threshold':'Precision'}
+                    </Span>
                   </Fragment>
                 )
               return (
@@ -249,6 +254,9 @@ const App = () => {
                       setFoo={setEncodingTypeChange}
                     />
                   </Span>
+                    <Span>
+                      {encodingTypeDropdownValuesRef.current[index]==='categorical'?'Threshold':'Precision'}
+                    </Span>
                 </Fragment>
               )
             })}
@@ -364,7 +372,7 @@ const EditTable = styled.div`
   display: grid;
   border-radius: 5px;
   width: fit-content;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(${editTableColumnNames.length}, 1fr);
   ${({ theme }) => `
 border-top:1px solid ${theme.colors.darkblue};
 border-right:1px solid ${theme.colors.darkblue};
