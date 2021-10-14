@@ -28,13 +28,18 @@ const App = () => {
   const [columnIsShown, setColumnIsShown] = useState(
     data[FIRST_OR_DEFAULT]?.map((_) => true)
   )
-  const dropdownValuesRef = useRef<string[]>([])
-  const [foo, setFoo] = useState(false)
+  const includeDropdownValuesRef = useRef<string[]>([])
+  const [includeChange, setIncludeChange] = useState(false)
   const encodingTypeDropdownValuesRef = useRef<string[]>([])
-  const [bar, setBar] = useState(false)
+  const [encodingTypeChange, setEncodingTypeChange] = useState(false)
+  // const [isCategorical,setIsCategorical]=useState(false)
+
+// useEffect(()=>{
+//   encodingTypeDropdownValuesRef.current
+// },[encodingTypeChange])
 
   const onFileLoaded = (data: any[][]) => {
-    dropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map((_) => '')
+    includeDropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map((_) => '')
     encodingTypeDropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map(
       (_) => ''
     )
@@ -45,7 +50,7 @@ const App = () => {
   }
 
   useEffect(() => {
-    dropdownValuesRef.current.some((value, index) => {
+    includeDropdownValuesRef.current.some((value, index) => {
       if (value === 'yes' && !columnIsShown[index]) {
         setColumnIsShown((columnIsShown) => {
           const newColumnIsShown = [...columnIsShown]
@@ -64,7 +69,7 @@ const App = () => {
         return true
       }
     })
-  }, [foo, columnIsShown])
+  }, [includeChange, columnIsShown])
 
   const showEditView = () => {
     setIsEditView(true)
@@ -163,9 +168,9 @@ const App = () => {
                       <Dropdown
                         items={includeDropdownItems}
                         initialSelectedIndex={0}
-                        valuesRef={dropdownValuesRef}
+                        valuesRef={includeDropdownValuesRef}
                         index={index}
-                        setFoo={setFoo}
+                        setFoo={setIncludeChange}
                       />
                     </Span>
                     <Span isCenter>
@@ -174,7 +179,7 @@ const App = () => {
                         initialSelectedIndex={0}
                         valuesRef={encodingTypeDropdownValuesRef}
                         index={index}
-                        setFoo={setBar}
+                        setFoo={setEncodingTypeChange}
                       />
                     </Span>
                   </Fragment>
@@ -197,9 +202,9 @@ const App = () => {
                       <Dropdown
                         items={includeDropdownItems}
                         initialSelectedIndex={0}
-                        valuesRef={dropdownValuesRef}
+                        valuesRef={includeDropdownValuesRef}
                         index={index}
-                        setFoo={setFoo}
+                        setFoo={setIncludeChange}
                       />
                     </Span>
                     <Span isCenter>
@@ -208,7 +213,7 @@ const App = () => {
                         initialSelectedIndex={0}
                         valuesRef={encodingTypeDropdownValuesRef}
                         index={index}
-                        setFoo={setBar}
+                        setFoo={setEncodingTypeChange}
                       />
                     </Span>
                   </Fragment>
@@ -230,9 +235,9 @@ const App = () => {
                     <Dropdown
                       items={includeDropdownItems}
                       initialSelectedIndex={0}
-                      valuesRef={dropdownValuesRef}
+                      valuesRef={includeDropdownValuesRef}
                       index={index}
-                      setFoo={setFoo}
+                      setFoo={setIncludeChange}
                     />
                   </Span>
                   <Span isCenter>
@@ -241,7 +246,7 @@ const App = () => {
                       initialSelectedIndex={0}
                       valuesRef={encodingTypeDropdownValuesRef}
                       index={index}
-                      setFoo={setBar}
+                      setFoo={setEncodingTypeChange}
                     />
                   </Span>
                 </Fragment>
