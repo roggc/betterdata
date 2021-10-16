@@ -1,21 +1,27 @@
 import styled from 'styled-components'
 import { ThemeProvider } from '../providers'
-import { useEffect, useState, Fragment, useRef } from 'react'
+import { useEffect, useState, Fragment, useRef,useLayoutEffect } from 'react'
 import CSVReader from 'react-csv-reader'
 import I from '../Input'
 import Dd, { IDropdownItem } from '../Dropdown'
+import EncodingOptions, { EncodingTypeEnum } from '../EncodingOptions'
 
 const FIRST_OR_DEFAULT = 0
 const TABLE_HEIGHT = 600
-const editTableColumnNames = ['Name', 'Include', 'Encoding type','Encoding options']
+const editTableColumnNames = [
+  'Name',
+  'Include',
+  'Encoding type',
+  'Encoding options',
+]
 const FIRST_NUMBER_OF_ROWS = 31
 const includeDropdownItems: IDropdownItem[] = [
-  { value: 'yes', label: 'yes' },
-  { value: 'no', label: 'no' },
+  { value: 'yes', label: 'Yes' },
+  { value: 'no', label: 'No' },
 ]
 const encodingTypeDropdownItems: IDropdownItem[] = [
   { value: 'categorical', label: 'Categorical' },
-  { value: 'digit', label: 'digit' },
+  { value: 'digit', label: 'Digit' },
 ]
 
 const App = () => {
@@ -29,19 +35,37 @@ const App = () => {
     data[FIRST_OR_DEFAULT]?.map((_) => true)
   )
   const includeDropdownValuesRef = useRef<string[]>([])
-  const [includeChange, setIncludeChange] = useState(false)
+  const [includeChange, setIncludeChange] = useState({ value: false, index: 0 })
   const encodingTypeDropdownValuesRef = useRef<string[]>([])
-  const [encodingTypeChange, setEncodingTypeChange] = useState(false)
+  const [encodingTypeChange, setEncodingTypeChange] = useState({
+    value: false,
+    index: 0,
+  })
+  const encodingOptionsValuesRef = useRef<string[]>([])
+  const [encodingOptionChange, setEncodingOptionChange] = useState(false)
 
-// useEffect(()=>{
-//   encodingTypeDropdownValuesRef.current
-// },[encodingTypeChange])
+  useEffect(() => {
+    if (
+      encodingTypeDropdownValuesRef.current[encodingTypeChange.index] ===
+      'categorical'
+    ) {
+      encodingOptionsValuesRef.current[encodingTypeChange.index] = '1'
+      setEncodingOptionChange(value=>!value)
+    } else if (
+      encodingTypeDropdownValuesRef.current[encodingTypeChange.index] ===
+      'digit'
+    ) {
+      encodingOptionsValuesRef.current[encodingTypeChange.index] = '0.1'
+      setEncodingOptionChange(value=>!value)
+    }
+  }, [encodingTypeChange.value])
 
   const onFileLoaded = (data: any[][]) => {
     includeDropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map((_) => '')
     encodingTypeDropdownValuesRef.current = data[FIRST_OR_DEFAULT]?.map(
       (_) => 'categorical'
     )
+    encodingOptionsValuesRef.current = data[FIRST_OR_DEFAULT]?.map((_) => '1')
     setColumnIsShown(data[FIRST_OR_DEFAULT]?.map((_) => true))
     setIsEditName(data[FIRST_OR_DEFAULT]?.map((_) => false))
     setName(data[FIRST_OR_DEFAULT])
@@ -166,23 +190,38 @@ const App = () => {
                     <Span isCenter>
                       <Dropdown
                         items={includeDropdownItems}
-                        initialSelectedIndex={0}
                         valuesRef={includeDropdownValuesRef}
                         index={index}
-                        setFoo={setIncludeChange}
+                        setValueChanged={setIncludeChange}
                       />
                     </Span>
                     <Span isCenter>
                       <Dropdown
                         items={encodingTypeDropdownItems}
-                        initialSelectedIndex={0}
                         valuesRef={encodingTypeDropdownValuesRef}
                         index={index}
-                        setFoo={setEncodingTypeChange}
+                        setValueChanged={setEncodingTypeChange}
                       />
                     </Span>
                     <Span>
-                      {encodingTypeDropdownValuesRef.current[index]==='categorical'?'Threshold':'Precision'}
+                      {encodingTypeDropdownValuesRef.current[index] ===
+                      'categorical' ? (
+                        <EncodingOptions
+                          encodingType={EncodingTypeEnum.Categorical}
+                          index={index}
+                          setValueChanged={setEncodingOptionChange}
+                          valuesRef={encodingOptionsValuesRef}
+                          key={encodingOptionsValuesRef.current[index]}
+                        />
+                      ) : (
+                        <EncodingOptions
+                          encodingType={EncodingTypeEnum.Digit}
+                          index={index}
+                          setValueChanged={setEncodingOptionChange}
+                          valuesRef={encodingOptionsValuesRef}
+                          key={encodingOptionsValuesRef.current[index]}
+                        />
+                      )}
                     </Span>
                   </Fragment>
                 )
@@ -203,23 +242,38 @@ const App = () => {
                     <Span isCenter>
                       <Dropdown
                         items={includeDropdownItems}
-                        initialSelectedIndex={0}
                         valuesRef={includeDropdownValuesRef}
                         index={index}
-                        setFoo={setIncludeChange}
+                        setValueChanged={setIncludeChange}
                       />
                     </Span>
                     <Span isCenter>
                       <Dropdown
                         items={encodingTypeDropdownItems}
-                        initialSelectedIndex={0}
                         valuesRef={encodingTypeDropdownValuesRef}
                         index={index}
-                        setFoo={setEncodingTypeChange}
+                        setValueChanged={setEncodingTypeChange}
                       />
                     </Span>
                     <Span isBottomRight>
-                      {encodingTypeDropdownValuesRef.current[index]==='categorical'?'Threshold':'Precision'}
+                      {encodingTypeDropdownValuesRef.current[index] ===
+                      'categorical' ? (
+                        <EncodingOptions
+                          encodingType={EncodingTypeEnum.Categorical}
+                          index={index}
+                          setValueChanged={setEncodingOptionChange}
+                          valuesRef={encodingOptionsValuesRef}
+                          key={encodingOptionsValuesRef.current[index]}
+                        />
+                      ) : (
+                        <EncodingOptions
+                          encodingType={EncodingTypeEnum.Digit}
+                          index={index}
+                          setValueChanged={setEncodingOptionChange}
+                          valuesRef={encodingOptionsValuesRef}
+                          key={encodingOptionsValuesRef.current[index]}
+                        />
+                      )}
                     </Span>
                   </Fragment>
                 )
@@ -239,24 +293,39 @@ const App = () => {
                   <Span isCenter>
                     <Dropdown
                       items={includeDropdownItems}
-                      initialSelectedIndex={0}
                       valuesRef={includeDropdownValuesRef}
                       index={index}
-                      setFoo={setIncludeChange}
+                      setValueChanged={setIncludeChange}
                     />
                   </Span>
                   <Span isCenter>
                     <Dropdown
                       items={encodingTypeDropdownItems}
-                      initialSelectedIndex={0}
                       valuesRef={encodingTypeDropdownValuesRef}
                       index={index}
-                      setFoo={setEncodingTypeChange}
+                      setValueChanged={setEncodingTypeChange}
                     />
                   </Span>
-                    <Span>
-                      {encodingTypeDropdownValuesRef.current[index]==='categorical'?'Threshold':'Precision'}
-                    </Span>
+                  <Span>
+                    {encodingTypeDropdownValuesRef.current[index] ===
+                    'categorical' ? (
+                      <EncodingOptions
+                        encodingType={EncodingTypeEnum.Categorical}
+                        index={index}
+                        setValueChanged={setEncodingOptionChange}
+                        valuesRef={encodingOptionsValuesRef}
+                        key={encodingOptionsValuesRef.current[index]}
+                      />
+                    ) : (
+                      <EncodingOptions
+                        encodingType={EncodingTypeEnum.Digit}
+                        index={index}
+                        setValueChanged={setEncodingOptionChange}
+                        valuesRef={encodingOptionsValuesRef}
+                        key={encodingOptionsValuesRef.current[index]}
+                      />
+                    )}
+                  </Span>
                 </Fragment>
               )
             })}

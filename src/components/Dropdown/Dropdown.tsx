@@ -7,25 +7,26 @@ export interface IDropdownItem {
 
 interface IDropdownProps {
   items: IDropdownItem[]
-  initialSelectedIndex?: number
   valuesRef: React.MutableRefObject<string[]>
   index: number
-  setFoo:React.Dispatch<React.SetStateAction<boolean>>
+  setValueChanged:React.Dispatch<React.SetStateAction<{
+    value: boolean;
+    index: number;
+}>>
 }
 
 const Dropdown: React.FC<IDropdownProps> = ({
   items,
-  initialSelectedIndex,
   valuesRef,
   index,
-  setFoo
+  setValueChanged
 }) => {
   const [value, setValue] = useState(valuesRef.current[index])
 
   useEffect(() => {
     if (value) {
       valuesRef.current[index] = value
-      setFoo(foo=>!foo)
+      setValueChanged(state=>({...state,value:!state.value,index}))
     }
   }, [value,index])
 
