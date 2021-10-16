@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import { ThemeProvider } from '../providers'
-import { useEffect, useState, Fragment, useRef,useLayoutEffect } from 'react'
+import { useEffect, useState, Fragment, useRef, useLayoutEffect } from 'react'
 import CSVReader from 'react-csv-reader'
 import I from '../Input'
 import Dd, { IDropdownItem } from '../Dropdown'
@@ -50,13 +50,13 @@ const App = () => {
       'categorical'
     ) {
       encodingOptionsValuesRef.current[encodingTypeChange.index] = '1'
-      setEncodingOptionChange(value=>!value)
+      setEncodingOptionChange((value) => !value)
     } else if (
       encodingTypeDropdownValuesRef.current[encodingTypeChange.index] ===
       'digit'
     ) {
       encodingOptionsValuesRef.current[encodingTypeChange.index] = '0.1'
-      setEncodingOptionChange(value=>!value)
+      setEncodingOptionChange((value) => !value)
     }
   }, [encodingTypeChange.value])
 
@@ -151,13 +151,33 @@ const App = () => {
     }
   }, [isEditName, name])
 
+  const sendToBackend = () => {
+    const values = encodingOptionsValuesRef.current.map(
+      (encodingOptionValue, index) => {
+        if (encodingTypeDropdownValuesRef.current[index] === 'categorical') {
+          return parseInt(encodingOptionValue)
+        }
+        if (encodingTypeDropdownValuesRef.current[index] === 'digit') {
+          return parseFloat(encodingOptionValue)
+        }
+        return NaN
+      }
+    )
+    console.log(values)
+  }
+
   const getContent = () => {
     if (isEditView) {
       return (
         <>
-          <Button onClick={showDataTable} type="button">
-            done
-          </Button>
+          <ButtonsWrapper>
+            <Button onClick={showDataTable} type="button">
+              done
+            </Button>
+            <Button onClick={sendToBackend} type="button">
+              send to backend
+            </Button>
+          </ButtonsWrapper>
           <EditTable>
             {editTableColumnNames.map((columnName, index) => {
               if (index === 0)
@@ -463,4 +483,9 @@ const Dropdown = styled(Dd)`
   border: 2px solid blue;
   background-color: red;
   padding: 5px;
+`
+
+const ButtonsWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
 `
